@@ -1,35 +1,24 @@
 import { useEffect, useState } from "react";
 
-function AdminRooms() {
-  // 🟢 ROOMS LIST
-  const [rooms, setRooms] = useState([]);
+const DEFAULT_ROOM_COLOR = "#2563eb";
 
-  // 🟡 FORM STATE
+function AdminRooms() {
+  const [rooms, setRooms] = useState([]);
   const [form, setForm] = useState({
     name: "",
     capacity: "",
     location: "",
-    color: "#4285F4", // 🆕 DEFAULT COLOR
+    color: DEFAULT_ROOM_COLOR,
   });
-
-  // 🟠 EDIT MODE
   const [editingId, setEditingId] = useState(null);
-
-  // 🔄 REFRESH TRIGGER
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // ===============================
-  // 📥 FETCH ROOMS
-  // ===============================
   useEffect(() => {
     fetch("http://localhost:5000/api/rooms")
       .then((res) => res.json())
       .then((data) => setRooms(data));
   }, [refreshKey]);
 
-  // ===============================
-  // 🟢 INPUT CHANGE
-  // ===============================
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -37,116 +26,75 @@ function AdminRooms() {
     });
   };
 
-  // ===============================
-  // ➕ CREATE ROOM
-  // ===============================
+  const resetForm = () => {
+    setEditingId(null);
+    setForm({
+      name: "",
+      capacity: "",
+      location: "",
+      color: DEFAULT_ROOM_COLOR,
+    });
+  };
+
   const createRoom = async () => {
     try {
-      const res = await fetch(
-        "http://localhost:5000/api/rooms",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(form),
-        }
-      );
+      const res = await fetch("http://localhost:5000/api/rooms", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
 
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.message);
 
-      // 🔄 Refresh list
+      resetForm();
       setRefreshKey((prev) => prev + 1);
-
-      // 🧹 Reset form
-      setForm({
-        name: "",
-        capacity: "",
-        location: "",
-        color: "#4285F4",
-      });
     } catch (err) {
       alert(err.message);
     }
   };
 
-  // ===============================
-  // ✏️ START EDIT
-  // ===============================
   const startEdit = (room) => {
     setEditingId(room.id);
     setForm({
       name: room.name,
       capacity: room.capacity,
       location: room.location,
-      color: room.color || "#4285F4",
+      color: room.color || DEFAULT_ROOM_COLOR,
     });
   };
 
-  // ===============================
-  // 💾 UPDATE ROOM
-  // ===============================
   const updateRoom = async () => {
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/rooms/${editingId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(form),
-        }
-      );
+      const res = await fetch(`http://localhost:5000/api/rooms/${editingId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(form),
+      });
 
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.message);
 
-            // 🔄 Reset edit mode
-        setEditingId(null);
-
-        // 🧹 Reset form
-        setForm({
-        name: "",
-        capacity: "",
-        location: "",
-        color: "#4285F4",
-        });
-
-        // 🔄 Force refresh from server (single source of truth)
-        setRefreshKey((prev) => prev + 1);
-
+      resetForm();
+      setRefreshKey((prev) => prev + 1);
     } catch (err) {
       alert(err.message);
     }
   };
 
-    // 🧹 CANCEL EDIT MODE
-    const cancelEdit = () => {
-    setEditingId(null);
-
-    setForm({
-        name: "",
-        capacity: "",
-        location: "",
-        color: "#4285F4",
-    });
-    };
-
-  // ===============================
-  // 🗑 DELETE ROOM
-  // ===============================
   const deleteRoom = async (id) => {
     if (!window.confirm("Delete this room?")) return;
 
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/rooms/${id}`,
-        { method: "DELETE" }
-      );
+      const res = await fetch(`http://localhost:5000/api/rooms/${id}`, {
+        method: "DELETE",
+      });
 
       if (!res.ok) throw new Error("Delete failed");
 
@@ -157,156 +105,145 @@ function AdminRooms() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
-
-      {/* ========================= */}
-      {/* 🟢 FORM */}
-      {/* ========================= */}
-      <div className="bg-white p-6 rounded-xl shadow mb-6">
-
-        
-        <div className="py-4 flex justify-between items-center">
-
-        <h2 className="text-xl font-bold mb-4">
-          {editingId ? "Edit Room" : "Create Room"}
-        </h2>
-        <div className="flex gap-6 text-sm ml-10 text-gray-600">
-        <a href="/admin" className="hover:text-blue-600 transition">Admin</a>
+    <div className="app-shell">
+      <nav className="app-nav">
+        <div className="app-container flex items-center justify-between py-4">
+          <a href="/admin" className="text-lg font-bold text-slate-950">
+            Admin Rooms
+          </a>
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <a href="/admin" className="app-button-secondary">
+              Dashboard
+            </a>
+            <a href="/" className="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-blue-700">
+              Home
+            </a>
+          </div>
         </div>
-        </div>
+      </nav>
 
-        <div className="grid gap-3">
+      <main className="app-container grid gap-6 py-8 lg:grid-cols-[420px_1fr]">
+        <section className="app-card h-fit p-6">
+          <div className="mb-6">
+            <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
+              Room setup
+            </p>
+            <h1 className="mt-1 text-2xl font-black text-slate-950">
+              {editingId ? "Edit Room" : "Create Room"}
+            </h1>
+            <p className="mt-2 text-sm text-slate-500">
+              Room colors are used directly in the admin and booking calendars.
+            </p>
+          </div>
 
-          <input
-            name="name"
-            placeholder="Room Name"
-            value={form.name}
-            onChange={handleChange}
-            className="border p-2 rounded-lg"
-          />
-
-          <input
-            name="capacity"
-            type="number"
-            placeholder="Capacity"
-            value={form.capacity}
-            onChange={handleChange}
-            className="border p-2 rounded-lg"
-          />
-
-          <input
-            name="location"
-            placeholder="Location"
-            value={form.location}
-            onChange={handleChange}
-            className="border p-2 rounded-lg"
-          />
-
-          {/* 🎨 COLOR PICKER */}
-          <div className="flex items-center gap-3">
-            <label className="text-sm text-gray-600">
-              Room Color:
+          <div className="space-y-4">
+            <label className="app-label">
+              Room Name
+              <input
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                className="app-input mt-1"
+              />
             </label>
 
-            <input
-              type="color"
-              name="color"
-              value={form.color}
-              onChange={handleChange}
-              className="w-10 h-10"
-            />
+            <label className="app-label">
+              Capacity
+              <input
+                name="capacity"
+                type="number"
+                value={form.capacity}
+                onChange={handleChange}
+                className="app-input mt-1"
+              />
+            </label>
+
+            <label className="app-label">
+              Location
+              <input
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                className="app-input mt-1"
+              />
+            </label>
+
+            <label className="app-label">
+              Room Color
+              <div className="mt-1 flex items-center gap-3">
+                <input
+                  type="color"
+                  name="color"
+                  value={form.color}
+                  onChange={handleChange}
+                  className="h-11 w-14 rounded-lg border border-slate-200 bg-white p-1"
+                />
+                <span className="rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-600">
+                  {form.color}
+                </span>
+              </div>
+            </label>
+
+            {editingId ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <button onClick={updateRoom} className="app-button-primary">
+                  Update Room
+                </button>
+                <button onClick={resetForm} className="app-button-secondary">
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button onClick={createRoom} className="app-button-primary w-full">
+                Create Room
+              </button>
+            )}
+          </div>
+        </section>
+
+        <section className="space-y-3">
+          <div>
+            <h2 className="text-2xl font-black text-slate-950">Rooms</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Maintain room capacity, location, and calendar color.
+            </p>
           </div>
 
-          {/* ACTION BUTTON */}
-          {editingId ? (
-            <div className="flex gap-2">
+          {rooms.map((room) => (
+            <div key={room.id} className="app-card p-4">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="h-14 w-2 rounded-full"
+                    style={{ backgroundColor: room.color || DEFAULT_ROOM_COLOR }}
+                  />
+                  <div>
+                    <h3 className="font-bold text-slate-950">{room.name}</h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {room.location} - Capacity {room.capacity}
+                    </p>
+                  </div>
+                </div>
 
-                {/* UPDATE BUTTON */}
-                <button
-                onClick={updateRoom}
-                className="bg-green-600 text-white py-2 rounded-lg flex-1"
-                >
-                Update Room
-                </button>
-
-                {/* CANCEL BUTTON */}
-                <button
-                onClick={cancelEdit}
-                className="bg-gray-400 text-white py-2 rounded-lg flex-1"
-                >
-                Cancel
-                </button>
-
-            </div>
-            ) : (
-            <button
-              onClick={createRoom}
-              className="bg-blue-600 text-white py-2 rounded-lg"
-            >
-              Create Room
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* ========================= */}
-      {/* 📋 ROOM LIST */}
-      {/* ========================= */}
-      <div className="grid gap-3">
-
-        {rooms.map((room) => (
-          <div
-            key={room.id}
-            className="flex justify-between items-center border p-4 rounded-lg bg-white"
-          >
-
-            {/* LEFT */}
-            <div className="flex items-center gap-3">
-
-              {/* COLOR DOT */}
-              <div
-                className="w-4 h-4 rounded-full"
-                style={{
-                  backgroundColor:
-                    room.color || "#6366F1",
-                }}
-              />
-
-              <div>
-                <h3 className="font-semibold">
-                  {room.name}
-                </h3>
-                <p className="text-sm text-gray-500">
-                  Capacity: {room.capacity}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {room.location}
-                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => startEdit(room)}
+                    className="rounded-lg bg-amber-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => deleteRoom(room.id)}
+                    className="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
-
-            {/* ACTIONS */}
-            <div className="flex gap-2">
-
-              <button
-                onClick={() => startEdit(room)}
-                className="bg-yellow-500 text-white px-3 py-1 rounded"
-              >
-                Edit
-              </button>
-
-              <button
-                onClick={() => deleteRoom(room.id)}
-                className="bg-red-600 text-white px-3 py-1 rounded"
-              >
-                Delete
-              </button>
-
-            </div>
-          </div>
-        ))}
-
-      </div>
+          ))}
+        </section>
+      </main>
     </div>
   );
 }

@@ -1,92 +1,91 @@
 function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-white to-gray-50">
-
-      {/* 🟦 NAVBAR */}
-      <nav className="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-
-          {/* 🏷 BRAND */}
-          <h1 className="text-xl font-bold text-gray-800">
+    <div className="app-shell">
+      <nav className="app-nav">
+        <div className="app-container flex items-center justify-between py-4">
+          <a href="/" className="text-lg font-bold text-slate-950">
             Conference Room Booking
-          </h1>
+          </a>
 
-          {/* 🔗 LINKS */}
-          <div className="flex gap-6 text-sm text-gray-600">
-            <a href="/" className="hover:text-blue-600 transition">Home</a>
-            <a href="/rooms" className="hover:text-blue-600 transition">Rooms</a>
-            <a href="/admin-login" className="hover:text-blue-600 transition">Admin</a>
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <a href="/rooms" className="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-blue-700">
+              Rooms
+            </a>
+            <a href="/admin-login" className="app-button-secondary">
+              Admin Login
+            </a>
           </div>
-
         </div>
       </nav>
 
-      {/* 🌟 HERO SECTION */}
-      <div className="max-w-7xl mx-auto px-6 py-20 text-center">
+      <main className="app-container py-14 lg:py-20">
+        <section className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+          <div>
+            <div className="mb-5 inline-flex rounded-full border border-blue-100 bg-blue-50 px-4 py-1.5 text-sm font-semibold text-blue-700">
+              Conflict-free room scheduling
+            </div>
+            <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-normal text-slate-950 md:text-6xl">
+              Book the right room without calendar confusion.
+            </h1>
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+              See room availability, reserve meeting time, and help admins keep
+              every schedule clear from one simple workspace.
+            </p>
 
-        {/* 🟣 BADGE */}
-        <div className="inline-block px-4 py-1 mb-6 text-sm bg-blue-100 text-blue-700 rounded-full">
-          Smart Scheduling System
-        </div>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a href="/rooms" className="app-button-primary px-6 py-3">
+                View Rooms
+              </a>
+              <a href="/admin-login" className="app-button-secondary px-6 py-3">
+                Admin Login
+              </a>
+            </div>
+          </div>
 
-        {/* 🧠 MAIN TITLE */}
-        <h2 className="text-5xl font-bold text-gray-900 leading-tight mb-6">
-          Book Meeting Rooms <br />
-          <span className="text-purple-600">Without Conflicts</span>
-        </h2>
+          <div className="app-card overflow-hidden">
+            <div className="border-b border-slate-100 bg-slate-50 px-6 py-4">
+              <p className="text-sm font-semibold text-slate-500">Today</p>
+              <h2 className="text-xl font-bold text-slate-950">Room Snapshot</h2>
+            </div>
+            <div className="space-y-4 p-6">
+              {[
+                ["Boardroom", "09:00 - 10:30", "#2563eb"],
+                ["Strategy Room", "11:00 - 12:00", "#059669"],
+                ["Focus Suite", "14:00 - 15:30", "#f59e0b"],
+              ].map(([room, time, color]) => (
+                <div key={room} className="flex items-center gap-4 rounded-xl border border-slate-100 bg-white p-4">
+                  <div className="h-12 w-1.5 rounded-full" style={{ backgroundColor: color }} />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-slate-900">{room}</p>
+                    <p className="text-sm text-slate-500">{time}</p>
+                  </div>
+                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                    Scheduled
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-        {/* 📝 SUBTEXT */}
-        <p className="text-gray-600 text-lg max-w-2xl mx-auto mb-10">
-          A modern room booking system with real-time availability,
-          conflict prevention, and admin control — built for teams.
-        </p>
-
-        {/* 🚀 CTA BUTTONS */}
-        <div className="flex justify-center gap-4">
-          <a
-            href="/rooms"
-            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition shadow-md"
-          >
-            View Rooms
-          </a>
-
-          <a
-            href="/admin"
-            className="bg-white border px-6 py-3 rounded-lg hover:bg-gray-100 transition"
-          >
-            Dashboard
-          </a>
-        </div>
-      </div>
-
-      {/* 📊 STATS SECTION */}
-      <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-6 pb-20">
-
-        {/* 🟦 CARD 1 */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border hover:shadow-md transition">
-          <h3 className="text-2xl font-bold text-blue-600">24/7</h3>
-          <p className="text-gray-600 mt-2">System Availability</p>
-        </div>
-
-        {/* 🟩 CARD 2 */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border hover:shadow-md transition">
-          <h3 className="text-2xl font-bold text-green-600">0</h3>
-          <p className="text-gray-600 mt-2">Double Bookings Allowed</p>
-        </div>
-
-        {/* 🟨 CARD 3 */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border hover:shadow-md transition">
-          <h3 className="text-2xl font-bold text-purple-600">Instant</h3>
-          <p className="text-gray-600 mt-2">Booking Updates</p>
-        </div>
-
-      </div>
-
-      {/* 🧩 FOOTER */}
-      <footer className="text-center text-gray-500 text-sm pb-10">
-        © {new Date().getFullYear()} Conference Room Booking System
-      </footer>
-
+        <section className="mt-14 grid gap-4 md:grid-cols-3">
+          <div className="app-card p-6">
+            <p className="text-3xl font-black text-blue-600">0</p>
+            <p className="mt-2 font-semibold text-slate-900">Double bookings</p>
+            <p className="mt-1 text-sm text-slate-500">Overlaps are blocked before they reach the calendar.</p>
+          </div>
+          <div className="app-card p-6">
+            <p className="text-3xl font-black text-emerald-600">Live</p>
+            <p className="mt-2 font-semibold text-slate-900">Availability</p>
+            <p className="mt-1 text-sm text-slate-500">Room schedules update after each booking change.</p>
+          </div>
+          <div className="app-card p-6">
+            <p className="text-3xl font-black text-amber-500">Admin</p>
+            <p className="mt-2 font-semibold text-slate-900">Control</p>
+            <p className="mt-1 text-sm text-slate-500">Manage rooms, colors, bookings, and approvals.</p>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }

@@ -1,10 +1,13 @@
-{/* BOOKINGS.JS - Handles all booking-related API routes */}
+/* BOOKINGS.JS - PostgreSQL Booking API (CLEAN VERSION) */
+
 const express = require("express");
 const router = express.Router();
 const pool = require("../database/db");
+const { requireAdmin } = require("./auth");
+const { sendAdminBookingNotification } = require("../utils/mailer");
 
 /* =========================
-   CREATE BOOKING (POST)
+   CREATE BOOKING
 ========================= */
 router.post("/", async (req, res) => {
   try {
@@ -18,9 +21,9 @@ router.post("/", async (req, res) => {
       end_time,
     } = req.body;
 
-    // -------------------------
-    // VALIDATION: WEEKDAYS
-    // -------------------------
+    /* =========================
+       VALIDATION: WEEKDAYS ONLY
+    ========================= */
     const day = new Date(start_time).getDay();
     const start = new Date(start_time);
     const end = new Date(end_time);
@@ -40,10 +43,10 @@ router.post("/", async (req, res) => {
       });
     }
 
-    // -------------------------
-    // CONFLICT CHECK
-    // -------------------------
-    const existingBooking = await pool.query(
+    /* =========================
+       CONFLICT CHECK
+    ========================= */
+    const conflict = await pool.query(
       `
       SELECT *
       FROM bookings
@@ -53,28 +56,28 @@ router.post("/", async (req, res) => {
       [room_id, start_time, end_time]
     );
 
-    if (existingBooking.rows.length > 0) {
+    if (conflict.rows.length > 0) {
       return res.status(400).json({
         message: "This room is already booked for that time.",
       });
     }
 
-    // -------------------------
-    // INSERT BOOKING
-    // -------------------------
+    /* =========================
+       INSERT BOOKING (DEFAULT: pending)
+    ========================= */
     const result = await pool.query(
       `
-      INSERT INTO bookings
-      (
+      INSERT INTO bookings (
         room_id,
         meeting_title,
         full_name,
         email,
         purpose,
         start_time,
-        end_time
+        end_time,
+        status
       )
-      VALUES ($1,$2,$3,$4,$5,$6,$7)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,'pending')
       RETURNING *
       `,
       [
@@ -88,7 +91,20 @@ router.post("/", async (req, res) => {
       ]
     );
 
-    res.status(201).json(result.rows[0]);
+    const booking = result.rows[0];
+
+    res.status(201).json(booking);
+
+    const roomResult = await pool.query("SELECT * FROM rooms WHERE id = $1", [
+      room_id,
+    ]);
+
+    sendAdminBookingNotification({
+      booking,
+      room: roomResult.rows[0],
+    }).catch((emailError) => {
+      console.error("Admin email notification failed:", emailError);
+    });
   } catch (error) {
     console.error("Booking Error:", error);
     res.status(500).json({ message: error.message });
@@ -106,6 +122,7 @@ router.get("/", async (req, res) => {
 
     res.json(result.rows);
   } catch (error) {
+    console.error("Fetch Error:", error);
     res.status(500).json({
       message: "Error fetching bookings",
     });
@@ -113,9 +130,10 @@ router.get("/", async (req, res) => {
 });
 
 /* =========================
-   UPDATE BOOKING (PUT)
+   UPDATE BOOKING
+   (includes STATUS support)
 ========================= */
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -127,11 +145,12 @@ router.put("/:id", async (req, res) => {
       purpose,
       start_time,
       end_time,
+      status,
     } = req.body;
 
-    // -------------------------
-    // VALIDATION: WEEKDAYS + HOURS
-    // -------------------------
+    /* =========================
+       VALIDATION: WEEKDAYS + HOURS
+    ========================= */
     const day = new Date(start_time).getDay();
     const start = new Date(start_time);
     const end = new Date(end_time);
@@ -151,9 +170,9 @@ router.put("/:id", async (req, res) => {
       });
     }
 
-    // -------------------------
-    // CONFLICT CHECK (EXCLUDE SELF)
-    // -------------------------
+    /* =========================
+       CONFLICT CHECK (exclude self)
+    ========================= */
     const conflict = await pool.query(
       `
       SELECT *
@@ -171,9 +190,9 @@ router.put("/:id", async (req, res) => {
       });
     }
 
-    // -------------------------
-    // UPDATE BOOKING
-    // -------------------------
+    /* =========================
+       UPDATE BOOKING
+    ========================= */
     const result = await pool.query(
       `
       UPDATE bookings
@@ -184,8 +203,9 @@ router.put("/:id", async (req, res) => {
         email = $4,
         purpose = $5,
         start_time = $6,
-        end_time = $7
-      WHERE id = $8
+        end_time = $7,
+        status = COALESCE($8, status)
+      WHERE id = $9
       RETURNING *
       `,
       [
@@ -196,6 +216,7 @@ router.put("/:id", async (req, res) => {
         purpose,
         start_time,
         end_time,
+        status,
         id,
       ]
     );
@@ -212,7 +233,7 @@ router.put("/:id", async (req, res) => {
 /* =========================
    DELETE BOOKING
 ========================= */
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -235,8 +256,7 @@ router.delete("/:id", async (req, res) => {
       message: "Booking deleted successfully",
     });
   } catch (error) {
-    console.error(error);
-
+    console.error("Delete Error:", error);
     res.status(500).json({
       message: "Error deleting booking",
     });

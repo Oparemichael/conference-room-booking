@@ -1,110 +1,117 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import RoomCalendar from "../components/RoomCalendar";
 
 function Rooms() {
   const [rooms, setRooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
-  // 🔄 This is a simple trigger to force calendar refresh
-const [refreshKey, setRefreshKey] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  // 🟡 FETCH ALL ROOMS FROM BACKEND
   useEffect(() => {
     fetch("http://localhost:5000/api/rooms")
       .then((res) => res.json())
-      .then((data) => setRooms(data))
+      .then((data) => {
+        setRooms(data);
+        setSelectedRoom((current) => current || data[0] || null);
+      })
       .catch((err) => console.error(err));
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-
-      {/* 🟦 PAGE HEADER */}
-      <div className="bg-white border-b shadow-sm">
-        <div className="px-20 py-4 flex justify-between items-center">
-        <div className="max-w-7xl px-16 py-6">
-          <h1 className="text-2xl font-bold text-gray-800">
-            Meeting Rooms
-          </h1>
-          <p className="text-gray-600 text-sm">
-            Select a room to view schedule and make bookings
-          </p>
-        </div>
-        <div className="flex px-10 gap-6 text-sm ml-10 text-gray-600">
-            <a href="/" className="hover:text-blue-600 transition">Home</a>
-            <a href="/admin-login" className="hover:text-blue-600 transition">Admin</a>
+    <div className="app-shell">
+      <nav className="app-nav">
+        <div className="app-container flex items-center justify-between py-4">
+          <a href="/" className="text-lg font-bold text-slate-950">
+            Conference Room Booking
+          </a>
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <a href="/" className="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-blue-700">
+              Home
+            </a>
+            <a href="/admin-login" className="app-button-secondary">
+              Admin
+            </a>
           </div>
         </div>
-      </div>
+      </nav>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 grid md:grid-cols-4 gap-6">
+      <main className="app-container py-8">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
+              Room booking
+            </p>
+            <h1 className="mt-1 text-3xl font-black text-slate-950">Meeting Rooms</h1>
+            <p className="mt-2 text-slate-600">
+              Select a room, review its schedule, and reserve an open time slot.
+            </p>
+          </div>
+        </div>
 
-        {/* 🟩 LEFT SIDE — ROOM LIST */}
-        <div className="md:col-span-1 space-y-3">
-
-          {rooms.map((room) => (
-            <div
-              key={room.id}
-              onClick={() => {
-                // 🟦 Set selected room
-                setSelectedRoom(room);
-
-                // 🔄 Force calendar to reload when switching rooms
-                setRefreshKey((prev) => prev + 1);
+        <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+          <aside className="space-y-3">
+            {rooms.map((room) => (
+              <button
+                type="button"
+                key={room.id}
+                onClick={() => {
+                  setSelectedRoom(room);
+                  setRefreshKey((prev) => prev + 1);
                 }}
-              className={`cursor-pointer p-4 rounded-xl border bg-white shadow-sm hover:shadow-md transition
-                ${
-                  selectedRoom?.id === room.id
-                    ? "border-blue-500"
-                    : "border-gray-200"
-                }
-              `}
-            >
-              <h2 className="font-semibold text-gray-800">
-                {room.name}
-              </h2>
+                className={`app-card w-full p-4 text-left transition hover:border-blue-200 hover:shadow-md ${
+                  selectedRoom?.id === room.id ? "border-blue-500 ring-2 ring-blue-100" : ""
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className="mt-1 h-10 w-2 rounded-full"
+                    style={{ backgroundColor: room.color || "#2563eb" }}
+                  />
+                  <div className="min-w-0">
+                    <h2 className="font-bold text-slate-950">{room.name}</h2>
+                    <p className="mt-1 text-sm text-slate-500">{room.location}</p>
+                    <p className="mt-2 text-xs font-semibold text-slate-400">
+                      Capacity {room.capacity}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </aside>
 
-              <p className="text-sm text-gray-500">
-                {room.location}
-              </p>
-
-              <p className="text-xs text-gray-400 mt-1">
-                Capacity: {room.capacity}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* 🟦 RIGHT SIDE — CALENDAR */}
-        <div className="md:col-span-3">
-
-          {!selectedRoom ? (
-            <div className="bg-white border rounded-xl p-10 text-center text-gray-500">
-              Select a room to view calendar
-            </div>
-          ) : (
-            <div className="bg-white border rounded-xl p-4 shadow-sm">
-              
-              {/* 🏷 ROOM HEADER */}
-              <div className="mb-4">
-                <h2 className="text-xl font-bold">
-                  {selectedRoom.name}
-                </h2>
-
-                <p className="text-sm text-gray-500">
-                  {selectedRoom.location} • Capacity {selectedRoom.capacity}
-                </p>
+          <section className="app-card p-5">
+            {!selectedRoom ? (
+              <div className="flex min-h-[360px] items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-slate-500">
+                Select a room to view its calendar.
               </div>
+            ) : (
+              <>
+                <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                  <div>
+                    <h2 className="text-2xl font-black text-slate-950">
+                      {selectedRoom.name}
+                    </h2>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {selectedRoom.location} - Capacity {selectedRoom.capacity}
+                    </p>
+                  </div>
+                  <span
+                    className="rounded-full px-3 py-1 text-xs font-bold text-white"
+                    style={{ backgroundColor: selectedRoom.color || "#2563eb" }}
+                  >
+                    Room color
+                  </span>
+                </div>
 
-              {/* 📅 CALENDAR */}
-              <RoomCalendar
-                roomId={selectedRoom.id}
-                 refreshKey={refreshKey} // 🔄 tells calendar when to reload
-              />
-            </div>
-          )}
-
+                <RoomCalendar
+                  roomId={selectedRoom.id}
+                  roomColor={selectedRoom.color}
+                  refreshKey={refreshKey}
+                />
+              </>
+            )}
+          </section>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

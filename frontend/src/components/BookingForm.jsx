@@ -1,28 +1,21 @@
-// 🟢 IMPORTS
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-function BookingForm({
-  roomId,
-  selectedSlot,
-  onBookingSuccess,
-}) {
-  // 🟡 UI MESSAGE STATE
+function BookingForm({ roomId, selectedSlot, onBookingSuccess }) {
   const [message, setMessage] = useState(null);
   const [messageType, setMessageType] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 🟢 SINGLE SOURCE OF TRUTH FOR FORM DATA (FIXED — ONLY ONE STATE)
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
     meeting_title: "",
     purpose: "",
-    start_time: null, // Date object
-    end_time: null,   // Date object
+    start_time: null,
+    end_time: null,
   });
 
-  // 🟢 SHOW MESSAGE HELPER
   const showMessage = (text, type) => {
     setMessage(text);
     setMessageType(type);
@@ -33,18 +26,17 @@ function BookingForm({
     }, 3000);
   };
 
-  // 🟢 AUTO-FILL FROM CALENDAR SELECTION
   useEffect(() => {
-    if (selectedSlot) {
-      setFormData((prev) => ({
-        ...prev,
-        start_time: new Date(selectedSlot.start),
-        end_time: new Date(selectedSlot.end),
-      }));
-    }
+    if (!selectedSlot) return;
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setFormData((prev) => ({
+      ...prev,
+      start_time: new Date(selectedSlot.start),
+      end_time: new Date(selectedSlot.end),
+    }));
   }, [selectedSlot]);
 
-  // 🟢 TEXT INPUT HANDLER
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -52,26 +44,23 @@ function BookingForm({
     });
   };
 
-  // 🟢 SUBMIT BOOKING
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 🟡 VALIDATION
     const start = new Date(formData.start_time);
     const end = new Date(formData.end_time);
     const now = new Date();
 
     if (start < now) {
-      alert("You cannot create a booking in the past.");
+      showMessage("You cannot create a booking in the past.", "error");
       return;
     }
 
     if (end <= start) {
-      alert("End time must be after start time.");
+      showMessage("End time must be after start time.", "error");
       return;
     }
 
-    // 🟢 CLEAN PAYLOAD
     const booking = {
       room_id: roomId,
       meeting_title: formData.meeting_title,
@@ -83,16 +72,15 @@ function BookingForm({
     };
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/bookings",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(booking),
-        }
-      );
+      setIsSubmitting(true);
+
+      const response = await fetch("http://localhost:5000/api/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(booking),
+      });
 
       const data = await response.json();
 
@@ -101,12 +89,10 @@ function BookingForm({
         return;
       }
 
-      showMessage("Booking created successfully!", "success");
+      showMessage("Booking created successfully.", "success");
 
-      // 🟢 REFRESH CALENDAR
       if (onBookingSuccess) onBookingSuccess();
 
-      // 🟢 RESET FORM
       setFormData({
         full_name: "",
         email: "",
@@ -115,125 +101,115 @@ function BookingForm({
         start_time: null,
         end_time: null,
       });
-
     } catch (error) {
       console.error(error);
       showMessage("Server error. Please try again.", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <>
-      {/* 🟡 MESSAGE DISPLAY */}
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <h2 className="text-xl font-bold text-slate-950">Book This Room</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Choose a weekday slot between 6 AM and 6 PM.
+        </p>
+      </div>
+
       {message && (
         <div
-          style={{
-            padding: "12px",
-            borderRadius: "10px",
-            textAlign: "center",
-            fontWeight: "500",
-            marginBottom: "10px",
-            background: messageType === "error" ? "#fee2e2" : "#dcfce7",
-            color: messageType === "error" ? "#b91c1c" : "#166534",
-            border: messageType === "error"
-              ? "1px solid #fca5a5"
-              : "1px solid #86efac",
-          }}
+          className={`rounded-lg border px-4 py-3 text-sm font-medium ${
+            messageType === "error"
+              ? "border-red-200 bg-red-50 text-red-700"
+              : "border-emerald-200 bg-emerald-50 text-emerald-700"
+          }`}
         >
           {message}
         </div>
       )}
 
-  <form
-    onSubmit={handleSubmit}
-    className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-6 space-y-4"
-  >
-    {/* Header */}
-    <div className="text-center mb-2">
-      <h2 className="text-xl font-semibold text-gray-800">
-        Book Meeting Room
-      </h2>
-      <p className="text-sm text-gray-500">
-        Fill in the details to reserve your slot
-      </p>
-    </div>
-
-    {/* Inputs */}
-    <input
-      name="full_name"
-      placeholder="Full Name"
-      value={formData.full_name}
-      onChange={handleChange}
-      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-    />
-
-    <input
-      name="meeting_title"
-      placeholder="Meeting Title"
-      value={formData.meeting_title}
-      onChange={handleChange}
-      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-    />
-
-    <input
-      name="email"
-      placeholder="Email"
-      value={formData.email}
-      onChange={handleChange}
-      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-    />
-
-    <input
-      name="purpose"
-      placeholder="Purpose"
-      value={formData.purpose}
-      onChange={handleChange}
-      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-    />
-
-    {/* Start Time */}
-    <div className="space-y-1">
-      <label className="text-sm font-medium text-gray-600">
-        Start Time
+      <label className="app-label">
+        Full Name
+        <input
+          name="full_name"
+          value={formData.full_name}
+          onChange={handleChange}
+          className="app-input mt-1"
+          required
+        />
       </label>
-      <DatePicker
-        selected={formData.start_time}
-        onChange={(date) =>
-          setFormData((prev) => ({ ...prev, start_time: date }))
-        }
-        showTimeSelect
-        dateFormat="Pp"
-        timeIntervals={15}
-        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-      />
-    </div>
 
-    {/* End Time */}
-    <div className="space-y-1">
-      <label className="text-sm font-medium text-gray-600">
-        End Time
+      <label className="app-label">
+        Meeting Title
+        <input
+          name="meeting_title"
+          value={formData.meeting_title}
+          onChange={handleChange}
+          className="app-input mt-1"
+          required
+        />
       </label>
-      <DatePicker
-        selected={formData.end_time}
-        onChange={(date) =>
-          setFormData((prev) => ({ ...prev, end_time: date }))
-        }
-        showTimeSelect
-        dateFormat="Pp"
-        timeIntervals={15}
-        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-      />
-    </div>
 
-    {/* Submit Button */}
-    <button
-      type="submit"
-      className="w-full py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 active:scale-[0.99] transition"
-    >
-      Book Room
-    </button>
-  </form>
-    </>
+      <label className="app-label">
+        Email
+        <input
+          name="email"
+          type="email"
+          value={formData.email}
+          onChange={handleChange}
+          className="app-input mt-1"
+          required
+        />
+      </label>
+
+      <label className="app-label">
+        Purpose
+        <input
+          name="purpose"
+          value={formData.purpose}
+          onChange={handleChange}
+          className="app-input mt-1"
+        />
+      </label>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="app-label">
+          Start Time
+          <DatePicker
+            selected={formData.start_time}
+            onChange={(date) =>
+              setFormData((prev) => ({ ...prev, start_time: date }))
+            }
+            showTimeSelect
+            dateFormat="Pp"
+            timeIntervals={15}
+            className="app-input mt-1"
+            required
+          />
+        </label>
+
+        <label className="app-label">
+          End Time
+          <DatePicker
+            selected={formData.end_time}
+            onChange={(date) =>
+              setFormData((prev) => ({ ...prev, end_time: date }))
+            }
+            showTimeSelect
+            dateFormat="Pp"
+            timeIntervals={15}
+            className="app-input mt-1"
+            required
+          />
+        </label>
+      </div>
+
+      <button type="submit" disabled={isSubmitting} className="app-button-primary w-full py-3">
+        {isSubmitting ? "Booking..." : "Book Room"}
+      </button>
+    </form>
   );
 }
 

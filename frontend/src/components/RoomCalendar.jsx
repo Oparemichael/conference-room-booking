@@ -5,250 +5,187 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { useEffect, useState } from "react";
 import BookingForm from "../components/BookingForm";
 
-function RoomCalendar({
-  roomId,
-  onSelect,
-  refreshCalendar,
-}) {
+const DEFAULT_ROOM_COLOR = "#2563eb";
+
+function RoomCalendar({ roomId, roomColor = DEFAULT_ROOM_COLOR, refreshCalendar, refreshKey }) {
   const [events, setEvents] = useState([]);
-  const [selectedEvent, setSelectedEvent] =
-  useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
-  const [slot, setSlot] = useState({start: null,end: null,});
-  // 🔄 This forces calendar to reload bookings when updated
-  const [refreshKey, setRefreshKey] = useState(0);
-  // 🔄 Call this whenever a booking is created
-  const triggerRefresh = () => {
-    setRefreshKey((prev) => prev + 1);
-  };
-  
+  const [slot, setSlot] = useState(null);
+  const [localRefreshKey, setLocalRefreshKey] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  fetch("http://localhost:5000/api/bookings")
-    .then((res) => res.json())
-    .then((data) => {
-      const filtered = data.filter(
-        (b) => b.room_id === Number(roomId)
-      );
+    const loadBookings = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("http://localhost:5000/api/bookings");
+        const data = await res.json();
 
-      const formatted = filtered.map((b) => ({
-        id: b.id,
-        title: b.meeting_title,
-        start: b.start_time,
-        end: b.end_time,
-        
-        backgroundColor: "#4285F4",
-        borderColor: "#4285F4",
+        if (!res.ok) {
+          throw new Error(data.message || "Failed to load bookings");
+        }
 
-        extendedProps: {
-          full_name: b.full_name,
-          email: b.email,
-          purpose: b.purpose,
-        },
-      }));
+        const formatted = data
+          .filter((booking) => Number(booking.room_id) === Number(roomId))
+          .map((booking) => ({
+            id: booking.id,
+            title: booking.meeting_title,
+            start: booking.start_time,
+            end: booking.end_time,
+            backgroundColor: roomColor,
+            borderColor: roomColor,
+            extendedProps: {
+              full_name: booking.full_name,
+              email: booking.email,
+              purpose: booking.purpose,
+              status: booking.status || "pending",
+            },
+          }));
 
-      setEvents(formatted);
-    });
-}, [roomId, refreshKey, refreshCalendar]); // 🔄 RELOAD WHEN ROOM CHANGES OR EXTERNAL TRIGGER
+        setEvents(formatted);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-const getColor = (roomId) => {
-  const colors = {
-    1: "#4285F4", // blue
-    2: "#34A853", // green
-    3: "#FBBC05", // yellow
-    4: "#EA4335", // red
-  };
-
-  return colors[roomId] || "#6366F1";
-};  
+    loadBookings();
+  }, [roomId, roomColor, localRefreshKey, refreshCalendar, refreshKey]);
 
   return (
-    <div style={{ padding: "20px", background: "#f9fafb", borderRadius: "10px" }}>
-      <h2>Room Schedule</h2>
+    <div className="calendar-surface">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-bold text-slate-950">Room Schedule</h2>
+          <p className="text-sm text-slate-500">
+            Select an open weekday time slot to create a booking.
+          </p>
+        </div>
+        <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+          6 AM - 6 PM
+        </div>
+      </div>
 
-        <FullCalendar
-            height="700px"
-            plugins={[
-              dayGridPlugin,
-              timeGridPlugin,
-              interactionPlugin,
-            ]}
-            initialView="timeGridWeek"
+      {loading && (
+        <div className="mb-4 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-medium text-blue-700">
+          Loading room schedule...
+        </div>
+      )}
 
-            headerToolbar={{
-              left: "prev,next today",
-              center: "title",
-              right: "timeGridWeek,timeGridDay",
-            }}
-
-            slotMinTime="06:00:00"
-            slotMaxTime="18:00:00"
-            hiddenDays={[0, 6]}
-            nowIndicator={true}
-            allDaySlot={false}
-
-            events={events}
-
-            selectable={true}
-            selectMirror={true}
-
-            // ✅ SINGLE CLEAN VALIDATION (FIXED)
-            selectAllow={(selectInfo) => {
-              const day = selectInfo.start.getDay();
-              const startHour = selectInfo.start.getHours();
-              const endHour = selectInfo.end.getHours();
-
-              const isWeekday = day >= 1 && day <= 5;
-              const isWorkingHours =
-                startHour >= 6 && endHour <= 18;
-
-              return isWeekday && isWorkingHours;
-            }}
-
-              select={(info) => {
-                setSlot({
-                  start: info.startStr,
-                  end: info.endStr,
-                });
-
-                setShowBookingModal(true);
-              }}
-
-            eventClick={(info) => {
-              setSelectedEvent({
-                title: info.event.title,
-                full_name: info.event.extendedProps.full_name,
-                email: info.event.extendedProps.email,
-                purpose: info.event.extendedProps.purpose,
-                start: info.event.start?.toLocaleString(),
-                end: info.event.end?.toLocaleString(),
-              });
-            }}
-
-            eventMouseEnter={(info) => {
-              info.el.title =
-                `${info.event.title}\n` +
-                `${info.event.extendedProps.full_name}`;
-            }}
-
-            // 🎨 GOOGLE CALENDAR STYLE IMPROVEMENT
-            eventDidMount={(info) => {
-              info.el.style.borderRadius = "6px";
-              info.el.style.padding = "2px";
-              info.el.style.fontSize = "12px";
-            }}
-        />
-
-{showBookingModal && slot && (
-  <div
-    style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      background: "rgba(0,0,0,0.6)",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      zIndex: 2000,
-    }}
-  >
-    <div className="bg-white p-5 rounded-lg w-[420px] mx-auto justify-center">
-      {/* <h2>Book Room</h2> */}
-
-      {/* ✅ REAL FORM (NOT STATIC ANYMORE) */}
-      <BookingForm
-          roomId={roomId}
-          selectedSlot={slot}
-
-          // ✅ FIXED: correct prop name
-          onBookingSuccess={() => {
-            // 🟢 Close modal after successful booking
-            setShowBookingModal(false);
-
-            // 🟢 Clear selected time slot
-            setSlot(null);
-
-            // 🔄 Refresh calendar data
-            setRefreshKey((prev) => prev + 1);
-          }}
-        />
-
-      <button
-        className="w-3/4 my-2 block mx-auto py-3 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 active:scale-[0.99] transition"
-        onClick={() => {
-          setShowBookingModal(false);
-          setSlot(null);
+      <FullCalendar
+        height="720px"
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+        initialView="timeGridWeek"
+        headerToolbar={{
+          left: "prev,next today",
+          center: "title",
+          right: "timeGridWeek,timeGridDay",
         }}
-      >
-        Cancel
-      </button>
-    </div>
-  </div>
-)}
+        slotMinTime="06:00:00"
+        slotMaxTime="18:00:00"
+        hiddenDays={[0, 6]}
+        nowIndicator={true}
+        allDaySlot={false}
+        events={events}
+        selectable={true}
+        selectMirror={true}
+        selectAllow={(selectInfo) => {
+          const day = selectInfo.start.getDay();
+          const startHour = selectInfo.start.getHours();
+          const endHour = selectInfo.end.getHours();
 
-            {selectedEvent && (
-            <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background:
-              "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              background: "white",
-              padding: "20px",
-              borderRadius: "10px",
-              width: "400px",
-            }}
-          >
-            <h2>{selectedEvent.title}</h2>
+          return day >= 1 && day <= 5 && startHour >= 6 && endHour <= 18;
+        }}
+        select={(info) => {
+          setSlot({
+            start: info.startStr,
+            end: info.endStr,
+          });
+          setShowBookingModal(true);
+        }}
+        eventClick={(info) => {
+          setSelectedEvent({
+            title: info.event.title,
+            full_name: info.event.extendedProps.full_name,
+            email: info.event.extendedProps.email,
+            purpose: info.event.extendedProps.purpose,
+            status: info.event.extendedProps.status,
+            start: info.event.start?.toLocaleString(),
+            end: info.event.end?.toLocaleString(),
+          });
+        }}
+        eventMouseEnter={(info) => {
+          info.el.title = `${info.event.title}\n${info.event.extendedProps.full_name}`;
+        }}
+        eventDidMount={(info) => {
+          info.el.style.borderRadius = "8px";
+          info.el.style.fontSize = "12px";
+          info.el.style.fontWeight = "700";
+          info.el.style.padding = "2px";
+        }}
+      />
 
-            <p>
-              <strong>Booked By:</strong>{" "}
-              {selectedEvent.full_name}
-            </p>
-
-            <p>
-              <strong>Email:</strong>{" "}
-              {selectedEvent.email}
-            </p>
-
-            <p>
-              <strong>Purpose:</strong>{" "}
-              {selectedEvent.purpose}
-            </p>
-
-            <p>
-              <strong>Start:</strong>{" "}
-              {selectedEvent.start}
-            </p>
-
-            <p>
-              <strong>End:</strong>{" "}
-              {selectedEvent.end}
-            </p>
+      {showBookingModal && slot && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4">
+          <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+            <BookingForm
+              roomId={roomId}
+              selectedSlot={slot}
+              onBookingSuccess={() => {
+                setShowBookingModal(false);
+                setSlot(null);
+                setLocalRefreshKey((prev) => prev + 1);
+              }}
+            />
 
             <button
-              onClick={() =>
-                setSelectedEvent(null)
-              }
+              className="mt-3 w-full rounded-lg border border-slate-200 bg-white py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
+              onClick={() => {
+                setShowBookingModal(false);
+                setSlot(null);
+              }}
             >
-              Close
+              Cancel
             </button>
           </div>
         </div>
-)}
+      )}
+
+      {selectedEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+            <div className="mb-5">
+              <h2 className="text-xl font-bold text-slate-950">{selectedEvent.title}</h2>
+              <p className="mt-1 text-sm text-slate-500">Booking details</p>
+            </div>
+
+            <div className="space-y-3 text-sm">
+              <p><strong className="text-slate-700">Booked By:</strong> {selectedEvent.full_name}</p>
+              <p><strong className="text-slate-700">Email:</strong> {selectedEvent.email}</p>
+              <p><strong className="text-slate-700">Purpose:</strong> {selectedEvent.purpose || "Not provided"}</p>
+              <p><strong className="text-slate-700">Start:</strong> {selectedEvent.start}</p>
+              <p><strong className="text-slate-700">End:</strong> {selectedEvent.end}</p>
+              <p>
+                <strong className="text-slate-700">Status:</strong>{" "}
+                <span className="status-pill bg-amber-50 text-amber-700">
+                  {selectedEvent.status || "pending"}
+                </span>
+              </p>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setSelectedEvent(null)}
+                className="app-button-primary"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

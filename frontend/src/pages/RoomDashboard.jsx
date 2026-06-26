@@ -6,164 +6,110 @@ import RoomCalendar from "../components/RoomCalendar";
 function RoomDashboard() {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [refreshCalendar, setRefreshCalendar] = useState(0);
+  const [room, setRoom] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const { id } = useParams();
-  const [room, setRoom] = useState(null);
 
   useEffect(() => {
     fetch("http://localhost:5000/api/rooms")
       .then((res) => res.json())
       .then((data) => {
-        const selected = data.find(
-          (r) => r.id == id
-        );
-        setRoom(selected);
-      });
+        const selected = data.find((item) => Number(item.id) === Number(id));
+        setRoom(selected || null);
+      })
+      .catch((error) => console.error(error))
+      .finally(() => setLoading(false));
   }, [id]);
 
-  if (!room) return <p>Loading...</p>;
+  if (loading) {
+    return (
+      <div className="app-shell flex items-center justify-center">
+        <div className="app-card p-6 text-slate-600">Loading room...</div>
+      </div>
+    );
+  }
+
+  if (!room) {
+    return (
+      <div className="app-shell flex items-center justify-center">
+        <div className="app-card p-6 text-slate-600">Room not found.</div>
+      </div>
+    );
+  }
+
+  const amenities = room.amenities
+    ?.split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 
   return (
-  <div
-    style={{
-      maxWidth: "1400px",
-      margin: "0 auto",
-      padding: "20px",
-    }}
-  >
-    {/* ROOM HEADER */}
-    <div
-      style={{
-        background: "#f8f9fa",
-        padding: "20px",
-        borderRadius: "10px",
-        marginBottom: "20px",
-        border: "1px solid #ddd",
-      }}
-    >
-      <h1>{room.name}</h1>
-
-      <p>
-        <strong>Location:</strong> {room.location}
-      </p>
-
-      <p>
-        <strong>Capacity:</strong> {room.capacity} People
-      </p>
-    </div>
-
-    {/* AMENITIES */}
-    <div
-      style={{
-        marginBottom: "20px",
-        padding: "15px",
-        border: "1px solid #ddd",
-        borderRadius: "8px",
-      }}
-    >
-      <p>
-        <strong>Amenities:</strong>
-      </p>
-
-      <ul>
-        {room.amenities
-          ?.split(",")
-          .map((item, index) => (
-            <li key={index}>{item.trim()}</li>
-          ))}
-      </ul>
-    </div>
-
-    {/* CALENDAR + FORM SECTION (IMPORTANT - DO NOT REMOVE) */}
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "2fr 1fr",
-        gap: "20px",
-        alignItems: "start",
-      }}
-    >
-      {/* LEFT: Calendar */}
-      <div
-        style={{
-          background: "white",
-          padding: "20px",
-          borderRadius: "10px",
-          border: "1px solid #ddd",
-        }}
-      >
-        <RoomCalendar
-          roomId={room.id}
-          onSelect={setSelectedSlot}
-        />
-      </div>
-
-      {/* RIGHT: Booking Form */}
-      <div
-        style={{
-          background: "white",
-          padding: "20px",
-          borderRadius: "10px",
-          border: "1px solid #ddd",
-          position: "sticky",
-          top: "20px",
-        }}
-      >
-        <BookingForm
-          roomId={room.id}
-          selectedSlot={selectedSlot}
-          onBookingSuccess={() =>
-            setRefreshCalendar((prev) => prev + 1)
-          }
-        />
-      </div>
-    </div>
-  </div>
-);
-
-      <div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "2fr 1fr",
-    gap: "20px",
-    alignItems: "start",
-  }}
->
-        {/* LEFT: Calendar */}
-       <div
-  style={{
-    background: "white",
-    padding: "20px",
-    borderRadius: "10px",
-    border: "1px solid #ddd",
-  }}
->
-          <RoomCalendar
-            roomId={room.id}
-            onSelect={setSelectedSlot}
-            refreshCalendar={refreshCalendar}
-          />
+    <div className="app-shell">
+      <nav className="app-nav">
+        <div className="app-container flex items-center justify-between py-4">
+          <a href="/rooms" className="text-lg font-bold text-slate-950">
+            Meeting Rooms
+          </a>
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <a href="/rooms" className="app-button-secondary">
+              Back to Rooms
+            </a>
+            <a href="/" className="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-blue-700">
+              Home
+            </a>
+          </div>
         </div>
+      </nav>
 
-        {/* RIGHT: Booking Form */}
-        <div
-  style={{
-    background: "white",
-    padding: "20px",
-    borderRadius: "10px",
-    border: "1px solid #ddd",
-  }}
->
+      <main className="app-container py-8">
+        <section className="app-card mb-6 overflow-hidden">
+          <div
+            className="h-2"
+            style={{ backgroundColor: room.color || "#2563eb" }}
+          />
+          <div className="flex flex-wrap items-end justify-between gap-4 p-6">
+            <div>
+              <h1 className="text-3xl font-black text-slate-950">{room.name}</h1>
+              <p className="mt-2 text-slate-600">
+                {room.location} - Capacity {room.capacity}
+              </p>
+            </div>
+            {amenities?.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {amenities.map((amenity) => (
+                  <span
+                    key={amenity}
+                    className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600"
+                  >
+                    {amenity}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
+          <section className="app-card p-5">
+            <RoomCalendar
+              roomId={room.id}
+              roomColor={room.color}
+              onSelect={setSelectedSlot}
+              refreshCalendar={refreshCalendar}
+            />
+          </section>
+
+          <aside className="app-card h-fit p-6 xl:sticky xl:top-6">
             <BookingForm
               roomId={room.id}
               selectedSlot={selectedSlot}
-              onBookingSuccess={() =>
-                setRefreshCalendar((prev) => prev + 1)
-              }
+              onBookingSuccess={() => setRefreshCalendar((prev) => prev + 1)}
             />
+          </aside>
         </div>
-      </div>
-  ;
+      </main>
+    </div>
+  );
 }
 
 export default RoomDashboard;

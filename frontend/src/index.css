@@ -1,6 +1,137 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  margin: 0;
+  background: #f8fafc;
+}
+
+@layer components {
+  .app-shell {
+    @apply min-h-screen bg-slate-50 text-slate-900;
+  }
+
+  .app-nav {
+    @apply border-b border-slate-200 bg-white/95 backdrop-blur;
+  }
+
+  .app-container {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .app-card {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  }
+
+  .app-button-primary {
+    @apply rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300;
+  }
+
+  .app-button-secondary {
+    @apply rounded-lg border border-slate-200 bg-white px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-50;
+  }
+
+  .app-input {
+    @apply w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100;
+  }
+
+  .app-label {
+    @apply block text-sm font-medium text-slate-700;
+  }
+
+  .status-pill {
+    @apply inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize;
+  }
+}
+
+.calendar-surface .fc {
+  --fc-border-color: #e2e8f0;
+  --fc-neutral-bg-color: #f8fafc;
+  --fc-page-bg-color: #ffffff;
+  --fc-today-bg-color: #eff6ff;
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+.calendar-surface .fc .fc-toolbar {
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.calendar-surface .fc .fc-toolbar-title {
+  color: #0f172a;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.calendar-surface .fc .fc-button {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  box-shadow: none;
+  font-weight: 700;
+  padding: 7px 11px;
+  text-transform: capitalize;
+}
+
+.calendar-surface .fc .fc-button:hover,
+.calendar-surface .fc .fc-button:focus {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.calendar-surface .fc .fc-button-primary:not(:disabled).fc-button-active {
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.calendar-surface .fc .fc-col-header-cell {
+  background: #f8fafc;
+  padding: 8px 0;
+}
+
+.calendar-surface .fc .fc-col-header-cell-cushion,
+.calendar-surface .fc .fc-timegrid-slot-label-cushion {
+  color: #64748b;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.calendar-surface .fc .fc-timegrid-slot {
+  height: 42px;
+}
+
+.calendar-surface .fc .fc-event {
+  border: 0;
+  border-radius: 8px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
+  overflow: hidden;
+}
+
+.calendar-surface .fc .fc-event-main {
+  padding: 2px 4px;
+}
+
+.calendar-surface .fc .fc-timegrid-now-indicator-line {
+  border-color: #ef4444;
+  border-width: 2px;
+}
+
+.calendar-surface .fc .fc-timegrid-now-indicator-arrow {
+  border-color: #ef4444;
+}
+
+.calendar-surface .fc .fc-daygrid-day-number {
+  color: #334155;
+  font-weight: 700;
+  text-decoration: none;
+}
+
 :root {
   --text: #6b6375;
   --text-h: #08060d;
