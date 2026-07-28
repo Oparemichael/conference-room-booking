@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getAdminHeaders } from "../utils/auth";
 
 const DEFAULT_ROOM_COLOR = "#2563eb";
 
@@ -9,6 +10,7 @@ function AdminRooms() {
     capacity: "",
     location: "",
     color: DEFAULT_ROOM_COLOR,
+    image_url: "",
   });
   const [editingId, setEditingId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -33,6 +35,7 @@ function AdminRooms() {
       capacity: "",
       location: "",
       color: DEFAULT_ROOM_COLOR,
+      image_url: "",
     });
   };
 
@@ -40,9 +43,9 @@ function AdminRooms() {
     try {
       const res = await fetch("http://localhost:5000/api/rooms", {
         method: "POST",
-        headers: {
+        headers: getAdminHeaders({
           "Content-Type": "application/json",
-        },
+        }),
         body: JSON.stringify(form),
       });
 
@@ -64,6 +67,7 @@ function AdminRooms() {
       capacity: room.capacity,
       location: room.location,
       color: room.color || DEFAULT_ROOM_COLOR,
+      image_url: room.image_url || "",
     });
   };
 
@@ -71,9 +75,9 @@ function AdminRooms() {
     try {
       const res = await fetch(`http://localhost:5000/api/rooms/${editingId}`, {
         method: "PUT",
-        headers: {
+        headers: getAdminHeaders({
           "Content-Type": "application/json",
-        },
+        }),
         body: JSON.stringify(form),
       });
 
@@ -94,6 +98,7 @@ function AdminRooms() {
     try {
       const res = await fetch(`http://localhost:5000/api/rooms/${id}`, {
         method: "DELETE",
+        headers: getAdminHeaders(),
       });
 
       if (!res.ok) throw new Error("Delete failed");
@@ -184,6 +189,30 @@ function AdminRooms() {
               </div>
             </label>
 
+            <label className="app-label">
+              Room Image URL
+              <input
+                name="image_url"
+                value={form.image_url}
+                onChange={handleChange}
+                placeholder="https://example.com/room-photo.jpg"
+                className="app-input mt-1"
+              />
+            </label>
+
+            {form.image_url && (
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+                <img
+                  src={form.image_url}
+                  alt="Room preview"
+                  className="h-40 w-full object-cover"
+                  onError={(event) => {
+                    event.currentTarget.style.display = "none";
+                  }}
+                />
+              </div>
+            )}
+
             {editingId ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 <button onClick={updateRoom} className="app-button-primary">
@@ -213,10 +242,18 @@ function AdminRooms() {
             <div key={room.id} className="app-card p-4">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div
-                    className="h-14 w-2 rounded-full"
-                    style={{ backgroundColor: room.color || DEFAULT_ROOM_COLOR }}
-                  />
+                  {room.image_url ? (
+                    <img
+                      src={room.image_url}
+                      alt={room.name}
+                      className="h-16 w-24 rounded-xl object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="h-14 w-2 rounded-full"
+                      style={{ backgroundColor: room.color || DEFAULT_ROOM_COLOR }}
+                    />
+                  )}
                   <div>
                     <h3 className="font-bold text-slate-950">{room.name}</h3>
                     <p className="mt-1 text-sm text-slate-500">

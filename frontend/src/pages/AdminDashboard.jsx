@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Admin from "./Admin";
+import { getAdminHeaders } from "../utils/auth";
 
 const API_BASE_URL = "http://localhost:5000/api";
 
@@ -90,6 +91,7 @@ function AdminDashboard() {
 
       const response = await fetch(`${API_BASE_URL}/bookings/${bookingToDelete.id}`, {
         method: "DELETE",
+        headers: getAdminHeaders(),
       });
 
       const data = await response.json();
@@ -130,6 +132,7 @@ function AdminDashboard() {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            ...getAdminHeaders(),
           },
           body: JSON.stringify(payload),
         }

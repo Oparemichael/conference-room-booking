@@ -95,14 +95,16 @@ router.post("/", async (req, res) => {
 
     res.status(201).json(booking);
 
-    const roomResult = await pool.query("SELECT * FROM rooms WHERE id = $1", [
-      room_id,
-    ]);
+    (async () => {
+      const roomResult = await pool.query("SELECT * FROM rooms WHERE id = $1", [
+        room_id,
+      ]);
 
-    sendAdminBookingNotification({
-      booking,
-      room: roomResult.rows[0],
-    }).catch((emailError) => {
+      await sendAdminBookingNotification({
+        booking,
+        room: roomResult.rows[0],
+      });
+    })().catch((emailError) => {
       console.error("Admin email notification failed:", emailError);
     });
   } catch (error) {

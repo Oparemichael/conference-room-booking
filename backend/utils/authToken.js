@@ -23,29 +23,33 @@ const createToken = (payload) => {
 };
 
 const verifyToken = (token) => {
-  if (!token || !token.includes(".")) return null;
+  try {
+    if (!token || !token.includes(".")) return null;
 
-  const [body, signature] = token.split(".");
-  const expectedSignature = sign(body);
+    const [body, signature] = token.split(".");
+    const expectedSignature = sign(body);
 
-  if (Buffer.byteLength(signature) !== Buffer.byteLength(expectedSignature)) {
+    if (Buffer.byteLength(signature) !== Buffer.byteLength(expectedSignature)) {
+      return null;
+    }
+
+    const isValidSignature = crypto.timingSafeEqual(
+      Buffer.from(signature),
+      Buffer.from(expectedSignature)
+    );
+
+    if (!isValidSignature) return null;
+
+    const payload = base64UrlDecode(body);
+
+    if (!payload.exp || payload.exp < Date.now()) {
+      return null;
+    }
+
+    return payload;
+  } catch (error) {
     return null;
   }
-
-  const isValidSignature = crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expectedSignature)
-  );
-
-  if (!isValidSignature) return null;
-
-  const payload = base64UrlDecode(body);
-
-  if (!payload.exp || payload.exp < Date.now()) {
-    return null;
-  }
-
-  return payload;
 };
 
 module.exports = {

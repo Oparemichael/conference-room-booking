@@ -5,6 +5,7 @@ import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
+import { getAdminHeaders } from "../utils/auth";
 
 const DEFAULT_ROOM_COLOR = "#6366F1";
 
@@ -152,6 +153,7 @@ function Admin() {
         `http://localhost:5000/api/bookings/${bookingId}`,
         {
           method: "DELETE",
+          headers: getAdminHeaders(),
         }
       );
 

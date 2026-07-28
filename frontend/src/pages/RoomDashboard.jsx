@@ -63,6 +63,13 @@ function RoomDashboard() {
 
       <main className="app-container py-8">
         <section className="app-card mb-6 overflow-hidden">
+          {room.image_url && (
+            <img
+              src={room.image_url}
+              alt={room.name}
+              className="h-56 w-full object-cover"
+            />
+          )}
           <div
             className="h-2"
             style={{ backgroundColor: room.color || "#2563eb" }}

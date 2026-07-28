@@ -1,4 +1,74 @@
+import { useEffect, useState } from "react";
+
+const API_BASE_URL = "http://localhost:5000/api";
+
+const isToday = (value) => {
+  const date = new Date(value);
+  const today = new Date();
+
+  return (
+    date.getFullYear() === today.getFullYear() &&
+    date.getMonth() === today.getMonth() &&
+    date.getDate() === today.getDate()
+  );
+};
+
+const formatTimeRange = (start, end) => {
+  const options = {
+    hour: "2-digit",
+    minute: "2-digit",
+  };
+
+  return `${new Date(start).toLocaleTimeString([], options)} - ${new Date(
+    end
+  ).toLocaleTimeString([], options)}`;
+};
+
 function Home() {
+  const [snapshot, setSnapshot] = useState([]);
+  const [loadingSnapshot, setLoadingSnapshot] = useState(true);
+
+  useEffect(() => {
+    const loadSnapshot = async () => {
+      try {
+        const [roomsRes, bookingsRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/rooms`),
+          fetch(`${API_BASE_URL}/bookings`),
+        ]);
+
+        const [roomsData, bookingsData] = await Promise.all([
+          roomsRes.json(),
+          bookingsRes.json(),
+        ]);
+
+        const roomsById = Object.fromEntries(
+          roomsData.map((room) => [Number(room.id), room])
+        );
+
+        const todaysBookings = bookingsData
+          .filter((booking) => isToday(booking.start_time))
+          .slice(0, 4)
+          .map((booking) => {
+            const room = roomsById[Number(booking.room_id)];
+
+            return {
+              ...booking,
+              roomName: room?.name || "Unknown room",
+              roomColor: room?.color || "#2563eb",
+            };
+          });
+
+        setSnapshot(todaysBookings);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoadingSnapshot(false);
+      }
+    };
+
+    loadSnapshot();
+  }, []);
+
   return (
     <div className="app-shell">
       <nav className="app-nav">
@@ -48,19 +118,38 @@ function Home() {
               <h2 className="text-xl font-bold text-slate-950">Room Snapshot</h2>
             </div>
             <div className="space-y-4 p-6">
-              {[
-                ["Boardroom", "09:00 - 10:30", "#2563eb"],
-                ["Strategy Room", "11:00 - 12:00", "#059669"],
-                ["Focus Suite", "14:00 - 15:30", "#f59e0b"],
-              ].map(([room, time, color]) => (
-                <div key={room} className="flex items-center gap-4 rounded-xl border border-slate-100 bg-white p-4">
-                  <div className="h-12 w-1.5 rounded-full" style={{ backgroundColor: color }} />
+              {loadingSnapshot && (
+                <p className="rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm font-medium text-blue-700">
+                  Loading today&apos;s bookings...
+                </p>
+              )}
+
+              {!loadingSnapshot && snapshot.length === 0 && (
+                <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm font-medium text-slate-600">
+                  No bookings scheduled for today.
+                </p>
+              )}
+
+              {snapshot.map((booking) => (
+                <div
+                  key={booking.id}
+                  className="flex items-center gap-4 rounded-xl border border-slate-100 bg-white p-4"
+                >
+                  <div
+                    className="h-12 w-1.5 rounded-full"
+                    style={{ backgroundColor: booking.roomColor }}
+                  />
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold text-slate-900">{room}</p>
-                    <p className="text-sm text-slate-500">{time}</p>
+                    <p className="font-bold text-slate-900">{booking.roomName}</p>
+                    <p className="text-sm text-slate-500">
+                      {formatTimeRange(booking.start_time, booking.end_time)}
+                    </p>
+                    <p className="truncate text-xs text-slate-400">
+                      {booking.meeting_title}
+                    </p>
                   </div>
-                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
-                    Scheduled
+                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold capitalize text-emerald-700">
+                    {booking.status || "pending"}
                   </span>
                 </div>
               ))}

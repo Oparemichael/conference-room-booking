@@ -62,10 +62,18 @@ function Rooms() {
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <div
-                    className="mt-1 h-10 w-2 rounded-full"
-                    style={{ backgroundColor: room.color || "#2563eb" }}
-                  />
+                  {room.image_url ? (
+                    <img
+                      src={room.image_url}
+                      alt={room.name}
+                      className="h-16 w-20 rounded-xl object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="mt-1 h-10 w-2 rounded-full"
+                      style={{ backgroundColor: room.color || "#2563eb" }}
+                    />
+                  )}
                   <div className="min-w-0">
                     <h2 className="font-bold text-slate-950">{room.name}</h2>
                     <p className="mt-1 text-sm text-slate-500">{room.location}</p>
@@ -86,13 +94,22 @@ function Rooms() {
             ) : (
               <>
                 <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
-                  <div>
-                    <h2 className="text-2xl font-black text-slate-950">
-                      {selectedRoom.name}
-                    </h2>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {selectedRoom.location} - Capacity {selectedRoom.capacity}
-                    </p>
+                  <div className="flex items-center gap-4">
+                    {selectedRoom.image_url && (
+                      <img
+                        src={selectedRoom.image_url}
+                        alt={selectedRoom.name}
+                        className="h-20 w-28 rounded-xl object-cover"
+                      />
+                    )}
+                    <div>
+                      <h2 className="text-2xl font-black text-slate-950">
+                        {selectedRoom.name}
+                      </h2>
+                      <p className="mt-1 text-sm text-slate-500">
+                        {selectedRoom.location} - Capacity {selectedRoom.capacity}
+                      </p>
+                    </div>
                   </div>
                   <span
                     className="rounded-full px-3 py-1 text-xs font-bold text-white"
