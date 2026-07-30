@@ -2,18 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Modernized global background and typography */
 body {
   margin: 0;
-  background: #f8fafc;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @layer components {
   .app-shell {
-    @apply min-h-screen bg-slate-50 text-slate-900;
+    @apply min-h-screen bg-surface text-slate-900 font-sans;
   }
 
   .app-nav {
-    @apply border-b border-slate-200 bg-white/95 backdrop-blur;
+    @apply sticky top-0 z-40 border-b border-transparent bg-white/80 backdrop-blur-md;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
   }
 
   .app-container {
@@ -21,19 +25,24 @@ body {
   }
 
   .app-card {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+    @apply rounded-xl bg-white shadow-soft border-0;
+    padding: 0.75rem; /* small default padding for cards */
+  }
+
+  .app-card > *:first-child {
+    margin-top: 0;
   }
 
   .app-button-primary {
-    @apply rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-primary-500 to-primary-400 px-4 py-2 font-semibold text-white shadow-elev transition-transform transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60;
   }
 
   .app-button-secondary {
-    @apply rounded-lg border border-slate-200 bg-white px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-50;
   }
 
   .app-input {
-    @apply w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100;
+    @apply w-full rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-primary-400 focus:ring-2 focus:ring-primary-100;
   }
 
   .app-label {
@@ -41,17 +50,23 @@ body {
   }
 
   .status-pill {
-    @apply inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize;
+    @apply inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold capitalize bg-amber-50 text-amber-700;
+  }
+
+  /* smaller subtle helpers */
+  .muted {
+    @apply text-muted text-sm;
   }
 }
 
+/* Calendar tuning */
 .calendar-surface .fc {
-  --fc-border-color: #e2e8f0;
-  --fc-neutral-bg-color: #f8fafc;
+  --fc-border-color: #eef2f7;
+  --fc-neutral-bg-color: #fbfdff;
   --fc-page-bg-color: #ffffff;
-  --fc-today-bg-color: #eff6ff;
-  color: #334155;
-  font-size: 0.9rem;
+  --fc-today-bg-color: #f1f8ff;
+  color: #1f2937;
+  font-size: 0.95rem;
 }
 
 .calendar-surface .fc .fc-toolbar {
@@ -61,37 +76,37 @@ body {
 }
 
 .calendar-surface .fc .fc-toolbar-title {
-  color: #0f172a;
+  color: #0b1220;
   font-size: 1.25rem;
   font-weight: 800;
 }
 
 .calendar-surface .fc .fc-button {
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: #ffffff;
-  color: #334155;
+  border: 1px solid #e6eefc;
+  border-radius: 10px;
+  background: #fff;
+  color: #0b1220;
   box-shadow: none;
   font-weight: 700;
-  padding: 7px 11px;
-  text-transform: capitalize;
+  padding: 8px 12px;
+  text-transform: none;
 }
 
 .calendar-surface .fc .fc-button:hover,
 .calendar-surface .fc .fc-button:focus {
-  border-color: #93c5fd;
-  background: #eff6ff;
-  color: #1d4ed8;
+  border-color: rgba(91,110,255,0.24);
+  background: rgba(91,110,255,0.06);
+  color: #2b3aa3;
 }
 
 .calendar-surface .fc .fc-button-primary:not(:disabled).fc-button-active {
-  border-color: #2563eb;
-  background: #2563eb;
+  border-color: #4956f0;
+  background: linear-gradient(90deg,#5b6eff,#4956f0);
   color: #ffffff;
 }
 
 .calendar-surface .fc .fc-col-header-cell {
-  background: #f8fafc;
+  background: transparent;
   padding: 8px 0;
 }
 
@@ -99,22 +114,21 @@ body {
 .calendar-surface .fc .fc-timegrid-slot-label-cushion {
   color: #64748b;
   font-weight: 700;
-  text-decoration: none;
 }
 
 .calendar-surface .fc .fc-timegrid-slot {
-  height: 42px;
+  height: 44px;
 }
 
 .calendar-surface .fc .fc-event {
   border: 0;
-  border-radius: 8px;
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
   overflow: hidden;
 }
 
 .calendar-surface .fc .fc-event-main {
-  padding: 2px 4px;
+  padding: 4px 6px;
 }
 
 .calendar-surface .fc .fc-timegrid-now-indicator-line {
@@ -122,60 +136,34 @@ body {
   border-width: 2px;
 }
 
-.calendar-surface .fc .fc-timegrid-now-indicator-arrow {
-  border-color: #ef4444;
-}
-
 .calendar-surface .fc .fc-daygrid-day-number {
-  color: #334155;
+  color: #0b1220;
   font-weight: 700;
-  text-decoration: none;
 }
 
+/* Design tokens */
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
+  --text: #475569;
+  --text-h: #0b1220;
+  --bg: #ffffff;
+  --surface: #f8fbff;
+  --border: #e6eefc;
   --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --accent-bg: rgba(170,59,255,0.06);
+  --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --sans: Inter, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  --heading: Inter, system-ui, 'Segoe UI', Roboto;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  /* color-scheme: light dark; */
+  font: 16px/1.6 var(--sans);
   color: var(--text);
   background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
 }
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-} */
+/* Responsive tweaks for tighter mobile spacing */
+@media (max-width: 640px) {
+  .app-container { padding-left: 1rem; padding-right: 1rem; }
+  .app-card { padding: 0.5rem; }
+}
+
