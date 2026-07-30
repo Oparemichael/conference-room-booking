@@ -73,8 +73,9 @@ function Home() {
     <div className="app-shell">
       <nav className="app-nav">
         <div className="app-container flex items-center justify-between py-4">
-          <a href="/" className="text-lg font-bold text-slate-950">
-            Conference Room Booking
+          <a href="/" className="flex items-center gap-3 text-lg font-extrabold text-slate-950">
+            <span className="h-8 w-8 rounded-md bg-gradient-to-br from-primary-500 to-primary-400 shadow-elev flex items-center justify-center text-white">CR</span>
+            <span>Conference Room Booking</span>
           </a>
 
           <div className="flex items-center gap-2 text-sm font-medium">
@@ -91,19 +92,19 @@ function Home() {
       <main className="app-container py-14 lg:py-20">
         <section className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
           <div>
-            <div className="mb-5 inline-flex rounded-full border border-blue-100 bg-blue-50 px-4 py-1.5 text-sm font-semibold text-blue-700">
+            <div className="mb-5 inline-flex rounded-full bg-primary-50 px-4 py-1.5 text-sm font-semibold text-primary-700">
               Conflict-free room scheduling
             </div>
-            <h1 className="max-w-3xl text-4xl font-black leading-tight tracking-normal text-slate-950 md:text-6xl">
+            <h1 className="max-w-3xl text-4xl font-extrabold leading-tight tracking-tight text-slate-950 md:text-6xl">
               Book the right room without calendar confusion.
             </h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-500">
               See room availability, reserve meeting time, and help admins keep
               every schedule clear from one simple workspace.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <a href="/rooms" className="app-button-primary px-6 py-3">
+              <a href="/rooms" className="app-button-primary px-8 py-3">
                 View Rooms
               </a>
               <a href="/admin-login" className="app-button-secondary px-6 py-3">
