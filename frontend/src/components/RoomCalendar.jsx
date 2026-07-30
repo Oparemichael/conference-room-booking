@@ -129,7 +129,7 @@ function RoomCalendar({ roomId, roomColor = DEFAULT_ROOM_COLOR, refreshCalendar,
 
       {showBookingModal && slot && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4">
-          <div className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+          <div className="material-panel max-h-[92vh] w-full max-w-lg overflow-y-auto p-6">
             <BookingForm
               roomId={roomId}
               selectedSlot={slot}
@@ -155,7 +155,7 @@ function RoomCalendar({ roomId, roomColor = DEFAULT_ROOM_COLOR, refreshCalendar,
 
       {selectedEvent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4">
-          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+          <div className="material-panel w-full max-w-md p-6">
             <div className="mb-5">
               <h2 className="text-xl font-bold text-slate-950">{selectedEvent.title}</h2>
               <p className="mt-1 text-sm text-slate-500">Booking details</p>

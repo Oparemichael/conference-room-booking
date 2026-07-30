@@ -109,13 +109,26 @@ function BookingForm({ roomId, selectedSlot, onBookingSuccess }) {
     }
   };
 
+  const hasSelectedTime = formData.start_time && formData.end_time;
+  const timeSummary = hasSelectedTime
+    ? `${formData.start_time.toLocaleString()} - ${formData.end_time.toLocaleString()}`
+    : "Select a time on the calendar or choose one below.";
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <h2 className="text-xl font-bold text-slate-950">Book This Room</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Choose a weekday slot between 6 AM and 6 PM.
-        </p>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="rounded-2xl border border-white/70 bg-gradient-to-br from-blue-50/85 to-white/70 p-5 shadow-sm">
+        <div className="flex items-start gap-4">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-lg font-black text-white shadow-sm shadow-blue-600/30">
+            +
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-slate-950">Book This Room</h2>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              Fill in the meeting details and choose a weekday slot between 6 AM
+              and 6 PM.
+            </p>
+          </div>
+        </div>
       </div>
 
       {message && (
@@ -130,16 +143,39 @@ function BookingForm({ roomId, selectedSlot, onBookingSuccess }) {
         </div>
       )}
 
-      <label className="app-label">
-        Full Name
-        <input
-          name="full_name"
-          value={formData.full_name}
-          onChange={handleChange}
-          className="app-input mt-1"
-          required
-        />
-      </label>
+      <div className="rounded-2xl border border-slate-200/70 bg-white/55 p-4 backdrop-blur">
+        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+          Selected time
+        </p>
+        <p className="mt-1 text-sm font-semibold text-slate-800">{timeSummary}</p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="app-label">
+          Full Name
+          <input
+            name="full_name"
+            value={formData.full_name}
+            onChange={handleChange}
+            placeholder="Jane Doe"
+            className="app-input mt-1"
+            required
+          />
+        </label>
+
+        <label className="app-label">
+          Email
+          <input
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="jane@company.com"
+            className="app-input mt-1"
+            required
+          />
+        </label>
+      </div>
 
       <label className="app-label">
         Meeting Title
@@ -147,18 +183,7 @@ function BookingForm({ roomId, selectedSlot, onBookingSuccess }) {
           name="meeting_title"
           value={formData.meeting_title}
           onChange={handleChange}
-          className="app-input mt-1"
-          required
-        />
-      </label>
-
-      <label className="app-label">
-        Email
-        <input
-          name="email"
-          type="email"
-          value={formData.email}
-          onChange={handleChange}
+          placeholder="Weekly planning"
           className="app-input mt-1"
           required
         />
@@ -166,15 +191,17 @@ function BookingForm({ roomId, selectedSlot, onBookingSuccess }) {
 
       <label className="app-label">
         Purpose
-        <input
+        <textarea
           name="purpose"
           value={formData.purpose}
           onChange={handleChange}
-          className="app-input mt-1"
+          rows="3"
+          placeholder="Add agenda, attendees, or setup notes"
+          className="app-input mt-1 resize-none"
         />
       </label>
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <label className="app-label">
           Start Time
           <DatePicker
@@ -206,7 +233,7 @@ function BookingForm({ roomId, selectedSlot, onBookingSuccess }) {
         </label>
       </div>
 
-      <button type="submit" disabled={isSubmitting} className="app-button-primary w-full py-3">
+      <button type="submit" disabled={isSubmitting} className="app-button-primary w-full py-3.5">
         {isSubmitting ? "Booking..." : "Book Room"}
       </button>
     </form>
