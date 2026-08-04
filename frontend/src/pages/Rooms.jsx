@@ -8,7 +8,7 @@ function Rooms() {
 
   useEffect(() => {
     fetch("http://localhost:5000/api/rooms")
-      .then((res) => res.json())
+      .then((response) => response.json())
       .then((data) => {
         setRooms(data);
         setSelectedRoom((current) => current || data[0] || null);
@@ -33,7 +33,6 @@ function Rooms() {
           </div>
         </div>
       </nav>
-
       <main className="app-container py-8">
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -46,7 +45,6 @@ function Rooms() {
             </p>
           </div>
         </div>
-
         <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
           <aside className="space-y-3">
             {rooms.map((room) => (
@@ -85,7 +83,6 @@ function Rooms() {
               </button>
             ))}
           </aside>
-
           <section className="app-card p-5">
             {!selectedRoom ? (
               <div className="flex min-h-[360px] items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-slate-500">
@@ -118,7 +115,6 @@ function Rooms() {
                     Room color
                   </span>
                 </div>
-
                 <RoomCalendar
                   roomId={selectedRoom.id}
                   roomColor={selectedRoom.color}
