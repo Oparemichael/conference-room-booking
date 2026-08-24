@@ -30,7 +30,21 @@ function App() {
           </ProtectedAdminRoute>
         }
       />
-      <Route path="*" element={<p>Page Not Found</p>} />
+      <Route
+        path="*"
+        element={
+          <div className="app-shell flex items-center justify-center">
+            <div className="material-panel p-8 text-center">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
+                404
+              </p>
+              <h1 className="mt-2 text-2xl font-black text-slate-950">
+                Page not found
+              </h1>
+            </div>
+          </div>
+        }
+      />
     </Routes>
   );
 }

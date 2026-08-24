@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import AppNav from "../components/AppNav";
 import BookingForm from "../components/BookingForm";
 import RoomCalendar from "../components/RoomCalendar";
 
@@ -45,73 +46,37 @@ function RoomDashboard() {
 
   return (
     <div className="app-shell">
-      <nav className="app-nav">
-        <div className="app-container flex items-center justify-between py-4">
-          <a href="/rooms" className="text-lg font-bold text-slate-950">
-            Meeting Rooms
-          </a>
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <a href="/rooms" className="app-button-secondary">
-              Back to Rooms
-            </a>
-            <a href="/" className="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-blue-700">
-              Home
-            </a>
-          </div>
-        </div>
-      </nav>
+      <AppNav />
 
       <main className="app-container py-8">
         <section className="app-card mb-6 overflow-hidden">
           {room.image_url && (
-            <img
-              src={room.image_url}
-              alt={room.name}
-              className="h-56 w-full object-cover"
-            />
+            <img src={room.image_url} alt={room.name} className="h-56 w-full object-cover" />
           )}
-          <div
-            className="h-2"
-            style={{ backgroundColor: room.color || "#2563eb" }}
-          />
+          <div className="h-2" style={{ backgroundColor: room.color || "#2563eb" }} />
           <div className="flex flex-wrap items-end justify-between gap-4 p-6">
             <div>
-              <h1 className="text-3xl font-black text-slate-950">{room.name}</h1>
-              <p className="mt-2 text-slate-600">
-                {room.location} - Capacity {room.capacity}
-              </p>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Room details</p>
+              <h1 className="mt-2 text-3xl font-black text-slate-950">{room.name}</h1>
+              <p className="mt-2 text-slate-600">{room.location} • Capacity {room.capacity}</p>
             </div>
-            {amenities?.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {amenities.map((amenity) => (
-                  <span
-                    key={amenity}
-                    className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600"
-                  >
-                    {amenity}
-                  </span>
-                ))}
-              </div>
-            )}
+            <div className="flex flex-wrap gap-2">
+              {(amenities?.length ? amenities : ["Workspace", "Hybrid-ready"]).map((amenity) => (
+                <span key={amenity} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+                  {amenity}
+                </span>
+              ))}
+            </div>
           </div>
         </section>
 
         <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
-          <section className="app-card p-5">
-            <RoomCalendar
-              roomId={room.id}
-              roomColor={room.color}
-              onSelect={setSelectedSlot}
-              refreshCalendar={refreshCalendar}
-            />
+          <section className="material-panel p-5">
+            <RoomCalendar roomId={room.id} roomColor={room.color} onSelect={setSelectedSlot} refreshCalendar={refreshCalendar} />
           </section>
 
-          <aside className="app-card h-fit p-6 xl:sticky xl:top-6">
-            <BookingForm
-              roomId={room.id}
-              selectedSlot={selectedSlot}
-              onBookingSuccess={() => setRefreshCalendar((prev) => prev + 1)}
-            />
+          <aside className="material-panel h-fit p-6 xl:sticky xl:top-6">
+            <BookingForm roomId={room.id} selectedSlot={selectedSlot} onBookingSuccess={() => setRefreshCalendar((prev) => prev + 1)} />
           </aside>
         </div>
       </main>

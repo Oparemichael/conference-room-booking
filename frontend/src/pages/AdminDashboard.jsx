@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import AppNav from "../components/AppNav";
 import Admin from "./Admin";
 import { getAdminHeaders } from "../utils/auth";
 
@@ -154,7 +155,9 @@ function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-5">
+    <div className="app-shell">
+      <AppNav />
+      <main className="app-container py-8">
       {editingBooking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
           <div className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-lg">
@@ -323,11 +326,11 @@ function AdminDashboard() {
         </div>
       )}
 
-      <div className="p-5">
+      <div>
         <Admin key={refreshKey} />
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="material-panel mt-6 overflow-hidden p-6">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
           <div>
             <h2 className="text-xl font-bold text-gray-900">All Bookings</h2>
@@ -400,6 +403,7 @@ function AdminDashboard() {
           </table>
         </div>
       </div>
+      </main>
     </div>
   );
 }
